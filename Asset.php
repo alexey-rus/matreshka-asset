@@ -45,8 +45,8 @@ class Asset
 
     protected $basePath = '';
 
-    protected $webPathCSS = '/css/';
-    protected $webPathJs = '/js/';
+    protected $webPathCSS = '/css/combined/';
+    protected $webPathJs = '/js/combined/';
 
     public static function getInstance(): Asset
     {
@@ -185,7 +185,7 @@ class Asset
     /**
      * @return string
      */
-    public function renderJs()
+    public function renderJs(): string
     {
         $jsPrioritized = $this->sortAsset($this->js);
 
@@ -193,13 +193,14 @@ class Asset
         if ($this->isOptimizeAssets()) {
             $assetToOptimize = [];
             foreach ($jsPrioritized as $jsFile) {
-                if (!$jsFile['is_external'] || $jsFile['skip']) {
+                if ($jsFile['is_external'] || $jsFile['skip']) {
                     $assetsString .= $this->getJsIncludeHtml($jsFile['path']);
                 } else if ($fullPath = $this->getFullPath($jsFile['path'])) {
                     $jsFile['full_path'] = $fullPath;
                     $assetToOptimize[] = $jsFile;
                 }
             }
+
             if (count($assetToOptimize)) {
                 $optimizedAssetPath = $this->optimizeAssets($assetToOptimize, 'js');
                 $assetsString .= $this->getJsIncludeHtml($optimizedAssetPath);
@@ -213,11 +214,42 @@ class Asset
         return $assetsString;
     }
 
+    public function renderCss()
+    {
+        $cssPrioritized = $this->sortAsset($this->css);
+
+        $assetsString = '';
+        if ($this->isOptimizeAssets()) {
+            $assetToOptimize = [];
+            foreach ($cssPrioritized as $cssFile) {
+                if ($cssFile['is_external'] || $cssFile['skip']) {
+                    $assetsString .= $this->getCssIncludeHtml($cssFile['path']);
+                } else if ($fullPath = $this->getFullPath($cssFile['path'])) {
+                    $cssFile['full_path'] = $fullPath;
+                    $assetToOptimize[] = $cssFile;
+                }
+            }
+
+            if (count($assetToOptimize)) {
+                $optimizedAssetPath = $this->optimizeAssets($assetToOptimize, 'css');
+                $assetsString .= $this->getCssIncludeHtml($optimizedAssetPath);
+            }
+        } else {
+            foreach ($cssPrioritized as $cssFile) {
+                $assetsString .= $this->getCssIncludeHtml($cssFile['path']);
+            }
+        }
+
+        return $assetsString;
+    }
+
+
     /**
      * @param array $assetToOptimize
      * @param string $type js or css
+     * @return string
      */
-    public function optimizeAssets($assetToOptimize, $type)
+    public function optimizeAssets(array $assetToOptimize, string $type): string
     {
         $cache = new Cache();
         $checksum = Cache::getAssetChecksum($assetToOptimize);
@@ -228,64 +260,27 @@ class Asset
         $assetContent = '';
         if ($status == self::STATUS_CHANGED || $status == self::STATUS_NEW) {
             foreach ($assetToOptimize as $asset) {
-                $assetContent .= $this->loadFile($asset['path']);
+                $assetContent .= $this->loadAsset($asset);
             }
             $this->save($assetContent, $optimizedFilePath);
+
+            $cache->saveAssetsMarker($assetToOptimize, $type, $checksum);
         }
 
-        return  $webPath . $optimizedFile;
+        return $webPath . $optimizedFile;
     }
-
 
     /**
      * Save to file.
      *
      * @param string $content The minified data
-     * @param string $path    The path to save the minified data to
      *
      * @throws \Exception
      */
-    protected function save($content, $path)
+    public function save(string $content, $path): void
     {
-        $handler = $this->openFileForWriting($path);
-
-        $this->writeToFile($handler, $content);
-
-        @fclose($handler);
-    }
-
-    /**
-     * Attempts to write $content to the file specified by $handler. $path is used for printing exceptions.
-     *
-     * @param resource $handler The resource to write to
-     * @param string   $content The content to write
-     * @param string   $path    The path to the file (for exception printing only)
-     *
-     * @throws \Exception
-     */
-    protected function writeToFile($handler, $content, $path = '')
-    {
-        if (($result = @fwrite($handler, $content)) === false || ($result < strlen($content))) {
-            throw new \Exception('The file "'.$path.'" could not be written to. Check your disk space and file permissions.');
-        }
-    }
-
-    /**
-     * Attempts to open file specified by $path for writing.
-     *
-     * @param string $path The path to the file
-     *
-     * @return resource Specifier for the target file
-     *
-     * @throws \Exception
-     */
-    protected function openFileForWriting($path)
-    {
-        if (($handler = @fopen($path, 'w')) === false) {
-            throw new \Exception('The file "'.$path.'" could not be opened for writing. Check if PHP has enough permissions.');
-        }
-
-        return $handler;
+       $file = new File($path);
+       $file->save($content);
     }
 
 
@@ -293,22 +288,13 @@ class Asset
      * @param $path
      * @return string
      */
-    public function getJsIncludeHtml($path): string
+    public function getJsIncludeHtml(string $path): string
     {
         return '<script type="text/javascript" src="' . $path . '"></script>' . "\n";
     }
 
-    public function renderCss()
-    {
-        $cssPrioritized = $this->sortAsset($this->css);
 
-        $assetsString = '';
-        foreach ($cssPrioritized as $cssFile) {
-            $assetsString .= $this->getCssIncludeHtml($cssFile['path']);
-        }
-    }
-
-    public function getCssIncludeHtml($path)
+    public function getCssIncludeHtml(string $path): string
     {
         return '<link type="text/css" rel="stylesheet" href="' . $path . '">' . "\n";
     }
@@ -316,20 +302,20 @@ class Asset
     /**
      * Load data.
      *
-     * @param string $data Path to a file
+     * @param array $asset
      *
      * @return string
      */
-    protected function loadFile($path)
+    protected function loadAsset(array $asset): string
     {
-        $assetContent = file_get_contents($path);
+        $assetContent = file_get_contents($asset['full_path']);
 
         // strip BOM, if any
         if (substr($assetContent, 0, 3) == "\xef\xbb\xbf") {
             $assetContent = substr($assetContent, 3);
         }
-
-        $assetContent = "\n/* Start:" . $path . "*/\n" . $assetContent . "\n/* End */\n";
+        $printPath = str_replace($this->getBasePath(), '', $asset['full_path']);
+        $assetContent = "\n/* Start: {$printPath} */\n" . $assetContent . "\n/* End: {$printPath} */\n";
 
         return $assetContent;
     }
@@ -345,9 +331,11 @@ class Asset
         //Checking if asset has minified version
         if (
             $this->isUseMinifiedFiles()
-            && !preg_match("/(.+)\\.min.(js|css)$/i", $assetPath, $matches)
+            && !preg_match("/(.+)\\.min.(js|css)$/i", $assetPath,)
         ) {
-            array_unshift($paths, $matches[1] . ".min." . $matches[2]);
+            preg_match("/(.+)\\.(js|css)$/i", $assetPath, $matches);
+            if (count($matches) === 3)
+                array_unshift($paths, $matches[1] . ".min." . $matches[2]);
         }
 
         $fullPath = null;

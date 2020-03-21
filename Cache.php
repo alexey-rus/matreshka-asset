@@ -46,24 +46,26 @@ class Cache
      * @param string $checksum
      * @return bool
      */
-    public function checkAssetChanged(array $assetList, string $optimizedFilePath, string $type, string $checksum = ''): bool
+    public function checkAssetChanged(array $assetList, string $optimizedFilePath, string $type, string $checksum = ''): string
     {
         if (!$checksum)
             $checksum = self::getAssetChecksum($assetList);
 
-        $cacheFile = $type . '_' . $checksum;
+        $cacheFile = $type . '_' . $checksum . '.php';
 
         $status = Asset::STATUS_UNCHANGED;
         if (file_exists($this->cachePath . $cacheFile) && file_exists($optimizedFilePath)) {
             $files = $this->loadConfig($this->cachePath . $cacheFile);
             foreach ($assetList as $asset) {
+
                 if (isset($files[$asset['path']])) {
-                    $fileMarker = self::getFileMarker($asset['path']);
+                    $fileMarker = self::getFileMarker($asset['full_path']);
                     if ($files[$asset['path']] != $fileMarker) {
                         $status = Asset::STATUS_CHANGED;
                         break;
                     }
                 } else {
+
                     $status = Asset::STATUS_CHANGED;
                     break;
                 }
@@ -73,6 +75,23 @@ class Cache
         }
 
         return $status;
+    }
+
+    public function saveAssetsMarker(array $assetList,  string $type, string $checksum = '')
+    {
+        if (!$checksum)
+            $checksum = self::getAssetChecksum($assetList);
+
+        $assetsData = [];
+        foreach ($assetList as $asset) {
+            $fileMarker = self::getFileMarker($asset['full_path']);
+            $assetsData[$asset['path']] = $fileMarker;
+        }
+        $cacheString = '<?php return ' . var_export($assetsData, true) . ';';
+
+        $cacheFile = $type . '_' . $checksum . '.php';
+        $file = new File($this->cachePath . $cacheFile);
+        $file->save($cacheString);
     }
 
     /**
