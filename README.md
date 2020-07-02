@@ -4,8 +4,33 @@
  
  Basic usage:
  ~~~
- Asset::getInstance()->addJs('/js/file.js')
- Asset::getInstance()->addCss('/css/file.css')
+use MatreshkaAsset\Asset;
+$asset = Asset::getInstance();
+//Add js files
+$asset->addJs('/js/jquery-3.4.1.js');
+$asset->addJs('/js/owl.carousel.js');
+$asset->addJs('/js/jquery.validate.js');
+
+//Combine
+try {
+    $jsInclude = $asset->renderJs();
+} catch (Exception $e) {
+    //Handle errors
+}
+//Display html script tag including combined file
+echo $jsInclude; 
+
+//Add css files
+$asset->addCss('/css/styles.css');
+$asset->addCss('/css/custom.css');
+try {
+    $cssInclude = $asset->renderCss();
+} catch (Exception $e) {
+    //Handle errors
+}
+
+//Display link tag including combined file
+echo $cssInclude;
 ~~~  
 
  You can set the sorting for files: 
