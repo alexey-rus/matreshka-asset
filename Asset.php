@@ -27,6 +27,9 @@ class Asset
     const STATUS_CHANGED = 'changed';
     const STATUS_UNCHANGED = 'not changed';
 
+    /**
+     * @var Asset|null
+     */
     private static $instance = null;
 
     /**
@@ -39,15 +42,40 @@ class Asset
      */
     protected $js = [];
 
+    /**
+     * @var bool
+     */
     protected $useMinifiedFiles = true;
 
+    /**
+     * @var bool
+     */
     protected $optimizeAssets = true;
 
+    /**
+     * @var string
+     */
     protected $basePath = '';
 
+    /**
+     * @var string
+     */
+    protected $webRoot = '';
+
+    /**
+     * @var string
+     */
     protected $webPathCSS = '/css/combined/';
+
+
+    /**
+     * @var string
+     */
     protected $webPathJs = '/js/combined/';
 
+    /**
+     * @return Asset
+     */
     public static function getInstance(): Asset
     {
         if (static::$instance === null) {
@@ -76,6 +104,54 @@ class Asset
      */
     private function __wakeup()
     {
+    }
+
+    /**
+     * @return string
+     */
+    public function getWebRoot(): string
+    {
+        return $this->webRoot;
+    }
+
+    /**
+     * @param string $webRoot
+     */
+    public function setWebRoot(string $webRoot): void
+    {
+        $this->webRoot = $webRoot;
+    }
+
+    /**
+     * @return string
+     */
+    public function getWebPathJs(): string
+    {
+        return $this->webPathJs;
+    }
+
+    /**
+     * @param string $webPathJs
+     */
+    public function setWebPathJs(string $webPathJs): void
+    {
+        $this->webPathJs = $webPathJs;
+    }
+
+    /**
+     * @return string
+     */
+    public function getWebPathCSS(): string
+    {
+        return $this->webPathCSS;
+    }
+
+    /**
+     * @param string $webPathCSS
+     */
+    public function setWebPathCSS(string $webPathCSS): void
+    {
+        $this->webPathCSS = $webPathCSS;
     }
 
     /**
@@ -112,6 +188,7 @@ class Asset
 
 
     /**
+     * Return path with assets
      * @return string
      */
     public function getBasePath(): string
@@ -120,6 +197,7 @@ class Asset
     }
 
     /**
+     * Set path with assets
      * @param string $basePath
      */
     public function setBasePath(string $basePath): void
@@ -184,6 +262,7 @@ class Asset
 
     /**
      * @return string
+     * @throws \Exception
      */
     public function renderJs(): string
     {
@@ -214,6 +293,11 @@ class Asset
         return $assetsString;
     }
 
+    /**
+     *
+     * @return string
+     * @throws \Exception
+     */
     public function renderCss()
     {
         $cssPrioritized = $this->sortAsset($this->css);
@@ -245,15 +329,17 @@ class Asset
 
 
     /**
+     * Optimize assets
      * @param array $assetToOptimize
      * @param string $type js or css
+     * @throws \Exception
      * @return string
      */
     public function optimizeAssets(array $assetToOptimize, string $type): string
     {
         $cache = new Cache();
         $checksum = Cache::getAssetChecksum($assetToOptimize);
-        $webPath = $type == 'css' ? $this->webPathCSS : $this->webPathJs;
+        $webPath = $type == 'css' ? $this->getWebPathCSS() : $this->getWebPathJs();
         $optimizedFile = $type . '_' . $checksum . '.' . $type;
         $optimizedFilePath = $this->basePath . $webPath . $optimizedFile;
         $status = $cache->checkAssetChanged($assetToOptimize, $optimizedFilePath, $type, $checksum);
@@ -267,14 +353,13 @@ class Asset
             $cache->saveAssetsMarker($assetToOptimize, $type, $checksum);
         }
 
-        return $webPath . $optimizedFile;
+        return $this->getWebRoot() . $webPath . $optimizedFile;
     }
 
     /**
      * Save to file.
      *
      * @param string $content The minified data
-     *
      * @throws \Exception
      */
     public function save(string $content, $path): void
@@ -285,6 +370,7 @@ class Asset
 
 
     /**
+     * Add html tag for including js file
      * @param $path
      * @return string
      */
@@ -293,7 +379,11 @@ class Asset
         return '<script type="text/javascript" src="' . $path . '"></script>' . "\n";
     }
 
-
+    /**
+     * Add html tag for including css file
+     * @param string $path
+     * @return string
+     */
     public function getCssIncludeHtml(string $path): string
     {
         return '<link type="text/css" rel="stylesheet" href="' . $path . '">' . "\n";
@@ -347,7 +437,6 @@ class Asset
                 $fullPath = $filePath;
             }
         }
-
         return $fullPath;
     }
 
@@ -368,8 +457,7 @@ class Asset
     /**
      * Check if the path is a external source
      *
-     * @param string $path
-     *
+     * @param string $path     *
      * @return bool
      */
     protected function isExternalSource(string $path): bool

@@ -13,16 +13,20 @@ namespace MatreshkaAsset;
 class Cache
 {
 
-
+    /**
+     * @var string
+     */
     protected $cachePath = '/cache/';
 
     /**
      * Cache constructor.
+     * @param string $fullPath
      */
-    public function __construct()
+    public function __construct($fullPath = __DIR__)
     {
-        $this->cachePath = __DIR__ . $this->cachePath;
+        $this->cachePath = $fullPath . $this->cachePath;
     }
+
 
     /**
      * Return md5 for asset
@@ -103,7 +107,6 @@ class Cache
     }
 
     /**
-
      * @param string $file
      * @return  array
      */
