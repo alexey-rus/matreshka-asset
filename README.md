@@ -14,23 +14,23 @@ $asset->addJs('/js/jquery.js');
 $asset->addJs('/js/main.js');
 $asset->addJs('/js/page.js');
 
-//Combine resources
+//Combine js resources
 try {
-    $jsInclude = $asset->renderJs();
+    $jsFiles = $asset->combineJs();
 } catch (Exception $e) {
     //Handle errors
 }
 
-//Display html script tag including combined file
-echo $jsInclude; 
+//Display html script tags including combined file
+echo $jsFiles; 
 
 //Add css files
 $asset->addCss('/css/styles.css');
 $asset->addCss('/css/custom.css');
 
-//Combine resources
+//Combine css resources
 try {
-    $cssInclude = $asset->renderCss();
+    $cssFiles = $asset->combineCss();
 } catch (Exception $e) {
     //Handle errors
 }

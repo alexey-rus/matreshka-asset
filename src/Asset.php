@@ -262,19 +262,20 @@ class Asset
     }
 
     /**
-     * @return string
+     * Combine js files and return list of files
+     * @return array
      * @throws Exceptions\IOException
      */
-    public function renderJs(): string
+    public function combineJs(): array
     {
         $jsPrioritized = $this->sortAsset($this->js);
 
-        $assetsString = '';
+        $assetsArray = [];
         if ($this->isOptimizeAssets()) {
             $assetToOptimize = [];
             foreach ($jsPrioritized as $jsFile) {
                 if ($jsFile['is_external'] || $jsFile['skip']) {
-                    $assetsString .= $this->getJsIncludeHtml($jsFile['path']);
+                    $assetsArray[] = $jsFile['path'];
                 } else if ($fullPath = $this->getFullPath($jsFile['path'])) {
                     $jsFile['full_path'] = $fullPath;
                     $assetToOptimize[] = $jsFile;
@@ -282,33 +283,32 @@ class Asset
             }
 
             if (count($assetToOptimize)) {
-                $optimizedAssetPath = $this->optimizeAssets($assetToOptimize, 'js');
-                $assetsString .= $this->getJsIncludeHtml($optimizedAssetPath);
+                $assetsArray[] = $this->optimizeAssets($assetToOptimize, 'js');
             }
         } else {
             foreach ($jsPrioritized as $jsFile) {
-                $assetsString .= $this->getJsIncludeHtml($jsFile['path']);
+                $assetsArray[] = $jsFile['path'];
             }
         }
 
-        return $assetsString;
+        return $assetsArray;
     }
 
     /**
-     * Combine css files and return html tag
-     * @return string
+     * Combine css files and return list of files
+     * @return array
      * @throws Exceptions\IOException
      */
-    public function renderCss()
+    public function combineCss(): array
     {
         $cssPrioritized = $this->sortAsset($this->css);
 
-        $assetsString = '';
+        $assetsArray = [];
         if ($this->isOptimizeAssets()) {
             $assetToOptimize = [];
             foreach ($cssPrioritized as $cssFile) {
                 if ($cssFile['is_external'] || $cssFile['skip']) {
-                    $assetsString .= $this->getCssIncludeHtml($cssFile['path']);
+                    $assetsArray[] = $this->getCssIncludeHtml($cssFile['path']);
                 } else if ($fullPath = $this->getFullPath($cssFile['path'])) {
                     $cssFile['full_path'] = $fullPath;
                     $assetToOptimize[] = $cssFile;
@@ -316,16 +316,43 @@ class Asset
             }
 
             if (count($assetToOptimize)) {
-                $optimizedAssetPath = $this->optimizeAssets($assetToOptimize, 'css');
-                $assetsString .= $this->getCssIncludeHtml($optimizedAssetPath);
+                $assetsArray[] = $this->optimizeAssets($assetToOptimize, 'css');
             }
         } else {
             foreach ($cssPrioritized as $cssFile) {
-                $assetsString .= $this->getCssIncludeHtml($cssFile['path']);
+                $assetsArray[] = $this->getCssIncludeHtml($cssFile['path']);
             }
         }
 
-        return $assetsString;
+        return $assetsArray;
+    }
+
+
+    /**
+     *
+     * @param array $files
+     * @return string
+     */
+    public function displayJsTags(array $files): string
+    {
+        $jsTagsString = '';
+        foreach ($files as $file) {
+            $jsTagsString .= $this->getJsIncludeHtml($file);
+        }
+        return $jsTagsString;
+    }
+
+    /**
+     * @param array $files
+     * @return string
+     */
+    public function displayCssTags(array $files): string
+    {
+        $cssTagsString = '';
+        foreach ($files as $file) {
+            $cssTagsString .= $this->getJsIncludeHtml($file);
+        }
+        return $cssTagsString;
     }
 
 
@@ -361,9 +388,10 @@ class Asset
      * Save to file.
      *
      * @param string $content The minified data
+     * @param string $path Path to save file
      * @throws Exceptions\IOException
      */
-    public function save(string $content, $path): void
+    public function save(string $content, string $path): void
     {
        $file = new File($path);
        $file->save($content);
