@@ -2,6 +2,8 @@
 
 namespace AlexeyRus\MatreshkaAsset;
 
+use AlexeyRus\MatreshkaAsset\Exceptions\IOException;
+
 class File
 {
     /**
@@ -44,7 +46,7 @@ class File
      *
      * @param string $content The minified data
      *
-     * @throws \Exception
+     * @throws IOException
      */
     public function save(string $content): void
     {
@@ -64,12 +66,12 @@ class File
      *
      * @param string  $content The content to write
      *
-     * @throws \Exception
+     * @throws IOException
      */
     public function writeToFile(string $content): void
     {
         if (($result = @fwrite($this->handler, $content)) === false || ($result < strlen($content))) {
-            throw new \Exception('The file "'.$this->getPath().'" could not be written to. Check your disk space and file permissions.');
+            throw new IOException('The file "'.$this->getPath().'" could not be written to. Check your disk space and file permissions.');
         }
     }
 
@@ -78,12 +80,12 @@ class File
      *
      * @return resource Specifier for the target file
      *
-     * @throws \Exception
+     * @throws IOException
      */
     public function openFileForWriting()
     {
         if (($this->handler = @fopen($this->getPath(), 'w')) === false) {
-            throw new \Exception('The file "' . $this->getPath() .'" could not be opened for writing. Check if PHP has enough permissions.');
+            throw new IOException('The file "' . $this->getPath() .'" could not be opened for writing. Check if PHP has enough permissions.');
         }
 
         return $this->handler;

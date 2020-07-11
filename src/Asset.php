@@ -11,6 +11,7 @@
 
 namespace AlexeyRus\MatreshkaAsset;
 
+
 /**
  * Class Asset
  * Combining and managing css and js files
@@ -262,7 +263,7 @@ class Asset
 
     /**
      * @return string
-     * @throws \Exception
+     * @throws Exceptions\IOException
      */
     public function renderJs(): string
     {
@@ -294,9 +295,9 @@ class Asset
     }
 
     /**
-     *
+     * Combine css files and return html tag
      * @return string
-     * @throws \Exception
+     * @throws Exceptions\IOException
      */
     public function renderCss()
     {
@@ -332,7 +333,7 @@ class Asset
      * Optimize assets
      * @param array $assetToOptimize
      * @param string $type js or css
-     * @throws \Exception
+     * @throws Exceptions\IOException
      * @return string
      */
     public function optimizeAssets(array $assetToOptimize, string $type): string
@@ -360,7 +361,7 @@ class Asset
      * Save to file.
      *
      * @param string $content The minified data
-     * @throws \Exception
+     * @throws Exceptions\IOException
      */
     public function save(string $content, $path): void
     {
