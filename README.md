@@ -8,9 +8,9 @@ use MatreshkaAsset\Asset;
 $asset = Asset::getInstance();
 
 //Add js files
-$asset->addJs('/js/jquery-3.4.1.js');
-$asset->addJs('/js/owl.carousel.js');
-$asset->addJs('/js/jquery.validate.js');
+$asset->addJs('/js/jquery.js');
+$asset->addJs('/js/main.js');
+$asset->addJs('/js/page.js');
 
 //Combine resources
 try {
@@ -37,7 +37,7 @@ try {
 echo $cssInclude;
 ~~~  
 
- You can set the sorting for files: 
+ You can set the order for files, for example if you need to include jquery library before any other files:
 ~~~
- Asset::getInstance()->addJs('/js/file.js', 1)
+ Asset::getInstance()->addJs('/js/jquery.js', -1)
 ~~~

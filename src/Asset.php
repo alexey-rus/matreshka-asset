@@ -208,9 +208,9 @@ class Asset
 
     /**
      * Add js file to asset
-     * @param string $path
+     * @param string $path  Path to file
      * @param int $sorting Setting order of including files, starting from the lowest
-     * @param bool $skip
+     * @param bool $skip Don't combine file to the main file
      * @return bool
      */
     public function addJs(string $path, int $sorting = 0, bool $skip = false): bool
@@ -227,9 +227,9 @@ class Asset
 
     /**
      * Add css file to asset
-     * @param string $path
+     * @param string $path Path to file
      * @param int $sorting Setting sorting of including files, starting from the lowest
-     * @param bool $skip
+     * @param bool $skip Don't combine file to the main file
      * @return bool
      */
     public function addCss(string $path, int $sorting = 0, bool $skip = false): bool
