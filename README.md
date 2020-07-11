@@ -6,23 +6,27 @@
  ~~~
 use MatreshkaAsset\Asset;
 $asset = Asset::getInstance();
+
 //Add js files
 $asset->addJs('/js/jquery-3.4.1.js');
 $asset->addJs('/js/owl.carousel.js');
 $asset->addJs('/js/jquery.validate.js');
 
-//Combine
+//Combine resources
 try {
     $jsInclude = $asset->renderJs();
 } catch (Exception $e) {
     //Handle errors
 }
+
 //Display html script tag including combined file
 echo $jsInclude; 
 
 //Add css files
 $asset->addCss('/css/styles.css');
 $asset->addCss('/css/custom.css');
+
+//Combine resources
 try {
     $cssInclude = $asset->renderCss();
 } catch (Exception $e) {
