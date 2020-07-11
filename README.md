@@ -1,8 +1,10 @@
 # Matreshka asset
-
- Combining and managing css and js files.
- 
- Basic usage:
+ Combining and managing css and js files. 
+## Installation
+~~~
+composer require alexey-rus/matreshka-asset
+~~~
+## Basic usage:
  ~~~
 use MatreshkaAsset\Asset;
 $asset = Asset::getInstance();
@@ -36,8 +38,14 @@ try {
 //Display link tag including combined file
 echo $cssInclude;
 ~~~  
-
- You can set the order for files, for example if you need to include jquery library before any other files:
+## File order
+ You can set the order for files (from lowest to highest), for example if you need to include jquery library before any other files:
 ~~~
  Asset::getInstance()->addJs('/js/jquery.js', -1)
+~~~
+## Include minified files
+If you have minified version for file (e.g. main.js => main.min.js), it will be automatically included instead of original file
+~~~
+ //It will check if main.min.js file exist
+ Asset::getInstance()->addJs('/js/main.js') 
 ~~~
