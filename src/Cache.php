@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2020, Alexey Usachev. All rights reserved
  * @license MIT License
  */
-namespace MatreshkaAsset;
+namespace AlexeyRus\MatreshkaAsset;
 
 class Cache
 {

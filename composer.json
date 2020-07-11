@@ -1,0 +1,21 @@
+{
+    "name": "alexey-rus/matreshka-asset",
+    "description": "Combining and managing css and js files.",
+    "keywords": ["asset", "css", "js", "javascript"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexey Usachev",
+            "email": "p15623@yandex.ru"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "AlexeyRus\\MatreshkaAsset\\": "src/"
+        }
+    }
+}

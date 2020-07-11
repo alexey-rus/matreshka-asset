@@ -9,7 +9,7 @@
  * @license MIT License
  */
 
-namespace MatreshkaAsset;
+namespace AlexeyRus\MatreshkaAsset;
 
 /**
  * Class Asset

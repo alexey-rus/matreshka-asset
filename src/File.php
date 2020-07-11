@@ -1,6 +1,6 @@
 <?php
 
-namespace MatreshkaAsset;
+namespace AlexeyRus\MatreshkaAsset;
 
 class File
 {
